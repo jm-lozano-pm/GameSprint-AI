@@ -4,129 +4,152 @@
 
 > **Turn game ideas into sprint-ready work.**
 >
-> AI-powered product planning for indie and small game-development teams.
+> An AI-powered product-planning MVP for indie and small game-development teams.
 
-[![Demo](https://img.shields.io/badge/Live%20Demo-Open%20GameSprint%20AI-6C3CE9?style=for-the-badge)](https://lovable.dev/preview/kmLD5kvuTbXOlfhIx3HY7jpvAlIAjegE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20GameSprint%20AI-6C3CE9?style=for-the-badge)](https://lovable.dev/preview/kmLD5kvuTbXOlfhIx3HY7jpvAlIAjegE) [![Figma](https://img.shields.io/badge/Figma-Design%20%26%20Prototype-F24E1E?style=for-the-badge&logo=figma&logoColor=white)](https://www.figma.com/proto/nRxc0bhcarxf49JPgvDKFb/GameSprint-AI-%E2%80%94-Design-System-1.0?node-id=7806-556&t=BLhGB1uvUPJyCrJF-1&scaling=min-zoom&content-scaling=fixed&page-id=7806%3A555) [![Lovable](https://img.shields.io/badge/Built%20with-Lovable-FF6B6B?style=for-the-badge)](https://lovable.dev/)
 
-## Overview
+## What is GameSprint AI?
 
-GameSprint AI helps game designers and small studio teams transform rough game ideas into structured, sprint-ready work.
+GameSprint AI is a product-management concept and working MVP designed to help small game-development teams move from a rough idea to clearly defined, sprint-ready work.
 
-The core workflow is:
+Instead of trying to replace established project-management tools, the product focuses on the step before the backlog: translating creative game ideas into structured development work.
+
+**Core workflow**
 
 **Idea → AI Breakdown → Human Review → Approval → Backlog → Sprint**
 
-The product is designed around a simple principle:
-
 > **AI recommends. Humans decide.**
 
-AI is used to accelerate planning and structure work, while people remain responsible for reviewing, editing and approving the generated output.
+The AI provides a first draft. The team reviews, edits and approves the result before it becomes committed development work.
 
-## The Problem
+## The Product Challenge
 
-Game ideas often start as informal concepts, notes or conversations. Turning those ideas into actionable product work can require significant manual effort before a team can begin planning and development.
+For a game designer or small studio team, a high-level idea still needs to become something developers can act on. That usually means defining user stories, acceptance criteria, edge cases, development tasks, priorities and effort estimates.
 
-GameSprint AI addresses this gap by helping transform a game idea into structured product-management artefacts that can be reviewed and refined by the team.
+GameSprint AI explores how AI can reduce that manual translation work without removing the human product decision from the process.
 
-## MVP
+## MVP Focus
 
-The MVP focuses on the workflow from idea capture to sprint planning, including:
+The MVP was intentionally scoped around one question:
 
-- Game idea capture
-- AI-generated breakdown
-- User stories
+> **Can AI help a small game-development team turn a raw gameplay idea into useful, reviewed, sprint-ready work in under five minutes?**
+
+The MVP includes:
+
+- Idea / feature creation
+- AI-generated user stories
 - Acceptance criteria
 - Edge cases
 - Development tasks
-- Priority and story points
+- Priority recommendations
+- Story-point estimates
 - Human review and editing
-- Approval workflow
+- Regeneration of AI output
+- Explicit approval
 - Backlog management
-- Sprint planning
+- Sprint creation and assignment
+- Basic sprint-board status tracking
 
-The product thesis is to move from a game idea to sprint-ready work in **under 5 minutes**, while keeping human review in the loop.
+## Product Outcomes We Wanted to Validate
 
-## Product Documentation
+**AI-to-Sprint Conversion:** target of **≥60%** of AI-generated features progressing to a sprint.
 
-### 📄 Product Requirements Document
+**Time to Sprint-Ready:** target of **<5 minutes**, including human review and editing.
 
-The PRD contains the product vision, problem definition, target users, MVP scope, competitive context, success metrics and roadmap.
+These metrics focus on whether the AI output is genuinely useful, not simply whether the system can generate text.
 
-[Read the PRD](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf)
+## Product & UX Approach
 
-### 🎨 Product & Design System
+The experience was designed to feel lighter than an enterprise project-management platform while still being structured enough for game-development workflows.
 
-The product and design system documents the visual language, UX principles, components and product experience used for GameSprint AI.
+The visual language uses:
 
-[Read the Product & Design System](docs/GameSprint_AI_Product_and_Design_System.md)
+- Purple for AI and brand emphasis
+- Blue for development and information
+- Green for approval and success
+- Amber for review and uncertainty
+- Red for errors
+- Neutral/slate tones for general and user-created content
 
-### 🏗️ Architecture Overview
+The product design is based on a reusable Figma design system covering foundations, components, patterns, application shell, AI workflow, backlog and sprint experiences, states and core screens.
 
-The architecture document describes the planned technical architecture and system approach for the product.
+### 🎨 Figma presentation & prototype
 
-[Read the Architecture Overview](docs/GameSprint_AI_Architecture_Overview.md)
+[Open the GameSprint AI presentation and interactive prototype in Figma](https://www.figma.com/proto/nRxc0bhcarxf49JPgvDKFb/GameSprint-AI-%E2%80%94-Design-System-1.0?node-id=7806-556&t=BLhGB1uvUPJyCrJF-1&scaling=min-zoom&content-scaling=fixed&page-id=7806%3A555)
 
-### 🎨 Figma Design System
+The presentation covers the product story, problem and opportunity, persona, core loop, product experience, competition, MVP scope, Responsible AI, architecture, success metrics, roadmap and business direction.
 
-The editable Figma source is included in the repository.
+## Documentation
 
-[Open the Figma source](design/GameSprint_AI_Design_System.fig)
+| Document | Purpose |
+|---|---|
+| [PRD](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf) | Product vision, discovery, users, positioning, prioritisation, MVP, metrics and roadmap |
+| [Product & Design System](docs/GameSprint_AI_Product_and_Design_System.md) | Visual language, UX principles, components, states and product experience |
+| [Architecture Overview](docs/GameSprint_AI_Architecture_Overview.md) | Planned technical architecture, AI orchestration, data boundaries and security principles |
+| [Figma source](design/GameSprint_AI_Design_System.fig) | Editable design-system source file |
+
+## Team & Role
+
+GameSprint AI was developed by a **team of three** as part of an **Ironhack academic project**.
+
+My main contribution was on the **Product Management side**, including product discovery, problem framing, product vision, user and competitor analysis, MVP scope, prioritisation, requirements, success metrics, Responsible AI principles and roadmap/business direction.
+
+The project was a collaborative effort across product, design and development rather than an individual build.
+
+## AI-Assisted Product Development
+
+AI was used throughout the project as an accelerator for research, ideation, documentation, product refinement and MVP development.
+
+The team remained responsible for the product concept, strategic direction, scope, prioritisation, design decisions, validation and final review. AI-generated content was treated as input to the process, not as an autonomous product decision.
+
+The application MVP was implemented with **Lovable**, and the resulting source code is maintained in this repository.
 
 ## Tech Stack
 
-The MVP is built with:
+The implemented MVP uses:
 
 - **React 19**
 - **TypeScript**
-- **TanStack Start & TanStack Router**
+- **TanStack Start / TanStack Router**
 - **Vite**
 - **Tailwind CSS**
 - **Supabase**
 - **React Query**
 - **dnd-kit** for drag-and-drop interactions
-- **Radix UI** components
-- **Lucide** icons
-- **Zod** for validation
+- **Radix UI**
+- **Lucide**
+- **Zod**
 
-## AI & Responsible AI
+## Responsible AI
 
-GameSprint AI uses AI as a planning assistant rather than an autonomous decision-maker.
+GameSprint AI follows a human-in-the-loop model:
 
-The product follows three core principles:
+- AI-generated requirements are drafts.
+- Recommendations and estimates are clearly presented as recommendations or estimates.
+- Users can edit and regenerate generated content.
+- Approval is explicit.
+- Unapproved AI output does not become committed development work automatically.
+- The system is designed to preserve project-data boundaries and minimise unnecessary context sent to an external AI provider.
 
-- **Human-in-the-loop:** generated work can be reviewed and edited before approval.
-- **Transparency:** AI-generated content is identified as such.
-- **Human accountability:** teams remain responsible for the final product decisions.
-
-## Project & Context
-
-GameSprint AI was developed as an **Ironhack academic project** and is presented here as an MVP and product-design case study.
-
-The project combines product management, UX/UI design, AI-assisted development and agile planning into a working prototype.
-
-## AI-Assisted Development
-
-AI was used throughout the project as a development and product-design accelerator, including ideation, specification, UI generation and MVP implementation.
-
-The application was built with **Lovable**, with the resulting source code maintained in this repository. Product decisions, scope, UX direction and final review remained human-led.
+> **GameSprint AI accelerates product decisions; it does not make them on behalf of the team.**
 
 ## Repository Structure
 
 ```text
 GameSprint-AI/
-├── assets/          # Brand identity and portfolio visuals
+├── assets/          # Brand identity and README visuals
 ├── design/          # Editable Figma design system
 ├── docs/            # Product and technical documentation
 ├── public/          # Static application assets
 ├── src/             # Application source code
 ├── supabase/        # Database configuration and migrations
 │
-├── .env.example     # Environment variable template
+├── .env.example     # Environment-variable template
 ├── package.json     # Dependencies and scripts
 └── README.md        # Project overview
 ```
 
-## Running Locally
+## Run Locally
 
 ### Prerequisites
 
@@ -134,9 +157,7 @@ GameSprint-AI/
 - npm or Bun
 - A configured Supabase project
 
-### Setup
-
-Clone the repository and install dependencies:
+### Installation
 
 ```bash
 git clone https://github.com/joselozano-pm/GameSprint-AI.git
@@ -144,7 +165,7 @@ cd GameSprint-AI
 npm install
 ```
 
-Create your local environment file from the template:
+Create a local environment file from the template:
 
 ```bash
 cp .env.example .env
@@ -158,16 +179,20 @@ Start the development server:
 npm run dev
 ```
 
-## Demo
+## Links
 
-**[Open the GameSprint AI MVP](https://lovable.dev/preview/kmLD5kvuTbXOlfhIx3HY7jpvAlIAjegE)**
+- 🚀 **[Live MVP](https://lovable.dev/preview/kmLD5kvuTbXOlfhIx3HY7jpvAlIAjegE)**
+- 🎨 **[Figma presentation & prototype](https://www.figma.com/proto/nRxc0bhcarxf49JPgvDKFb/GameSprint-AI-%E2%80%94-Design-System-1.0?node-id=7806-556&t=BLhGB1uvUPJyCrJF-1&scaling=min-zoom&content-scaling=fixed&page-id=7806%3A555)**
+- 📄 **[Product Requirements Document](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf)**
+- 🎨 **[Product & Design System](docs/GameSprint_AI_Product_and_Design_System.md)**
+- 🏗️ **[Architecture Overview](docs/GameSprint_AI_Architecture_Overview.md)**
 
 ## Status
 
 **MVP — Validating**
 
-This repository represents the MVP developed for the Ironhack project. The product is intentionally focused on validating the core workflow before expanding the scope.
+This repository contains the MVP and supporting product/design artefacts created for the Ironhack project. The current scope focuses on validating the core idea-to-sprint workflow before expanding into broader collaboration, integrations and advanced AI assistance.
 
 ---
 
-**GameSprint AI** · Ideas to Games. Faster.
+**GameSprint AI** · *Ideas to Games. Faster.*
