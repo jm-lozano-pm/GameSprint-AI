@@ -4,13 +4,18 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
   useDraggable,
   useDroppable,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import { MoreHorizontal, GripVertical } from "lucide-react";
 import { toast } from "sonner";
@@ -81,13 +86,27 @@ type Member = {
   professionalRoles?: Array<{ id: string; name: string; icon?: string | null }>;
 };
 
+/**
+ * Column model — the board renders whatever list of statuses it is given, so
+ * extra project statuses can be appended later without layout changes.
+ */
+const COLUMNS: readonly SprintBoardStatus[] = SPRINT_BOARD_STATUSES;
+
+/** Prefer the column under the pointer; fall back to rect overlap for keyboard drags. */
+const collisionDetection: CollisionDetection = (args) => {
+  const pointerHits = pointerWithin(args);
+  return pointerHits.length > 0 ? pointerHits : rectIntersection(args);
+};
+
 function SprintBoardPage() {
   const { projectId, sprintId } = Route.useParams();
   const queryClient = useQueryClient();
   const fetchBoard = useServerFn(getSprintBoard);
   const fetchMembers = useServerFn(getProjectMembers);
   const updateStatus = useServerFn(setItemStatus);
-  const [pending, setPending] = useState<Record<string, BoardStatus>>({});
+  /** Confirmed-but-not-yet-refetched statuses. Never applied before the drop resolves. */
+  const [overrides, setOverrides] = useState<Record<string, BoardStatus>>({});
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const boardQuery = useQuery({
     queryKey: ["sprint-board", projectId, sprintId],
@@ -101,10 +120,11 @@ function SprintBoardPage() {
   });
 
   const statusMutation = useMutation({
-    mutationFn: (input: { itemId: string; status: BoardStatus }) =>
-      updateStatus({ data: { projectId, ...input } }),
+    mutationFn: (input: { itemId: string; status: BoardStatus; from: BoardStatus }) =>
+      updateStatus({ data: { projectId, itemId: input.itemId, status: input.status } }),
     onSuccess: async (result, variables) => {
-      // Patch the cached board first so the card stays visible in its new column.
+      const resolved = (result?.status ?? variables.status) as BoardStatus;
+      // Patch the cache so the card renders in the destination immediately.
       queryClient.setQueryData(
         ["sprint-board", projectId, sprintId],
         (previous: { sprint: unknown; items: BoardItem[] } | undefined) =>
@@ -112,45 +132,53 @@ function SprintBoardPage() {
             ? {
                 ...previous,
                 items: previous.items.map((item) =>
-                  item.id === variables.itemId
-                    ? { ...item, status: (result?.status ?? variables.status) as BoardStatus }
-                    : item,
+                  item.id === variables.itemId ? { ...item, status: resolved } : item,
                 ),
               }
             : previous,
       );
+      setOverrides((current) => ({ ...current, [variables.itemId]: resolved }));
       queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
       queryClient.invalidateQueries({ queryKey: ["backlog", projectId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", projectId] });
-      // Refetch the board and only then drop the optimistic status, so the card
-      // never lands in a gap between the optimistic and server state.
       await queryClient.invalidateQueries({
         queryKey: ["sprint-board", projectId, sprintId],
       });
-    },
-    onError: (error: Error) => toast.error(error.message),
-    onSettled: (_data, _error, variables) =>
-      setPending((current) => {
+      setOverrides((current) => {
         const next = { ...current };
         delete next[variables.itemId];
         return next;
-      }),
+      });
+    },
+    onError: (error: Error, variables) => {
+      // Restore the original position; the card is never left invisible.
+      setOverrides((current) => {
+        const next = { ...current };
+        delete next[variables.itemId];
+        return next;
+      });
+      toast.error(error.message);
+    },
   });
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor),
+  );
 
   const move = (itemId: string, status: BoardStatus, currentStatus: string) => {
     if (status === currentStatus) return;
-    setPending((current) => ({ ...current, [itemId]: status }));
-    statusMutation.mutate({ itemId, status });
+    statusMutation.mutate({ itemId, status, from: currentStatus as BoardStatus });
   };
 
+  const onDragStart = (event: DragStartEvent) => setDraggingId(String(event.active.id));
+
   const onDragEnd = (event: DragEndEvent) => {
+    setDraggingId(null);
     const overId = event.over?.id;
     const itemId = String(event.active.id);
     const currentStatus = String(event.active.data.current?.["status"] ?? "");
-    // Ignore drops that did not land on a real column.
-    const status = SPRINT_BOARD_STATUSES.find((candidate) => candidate === overId);
+    const status = COLUMNS.find((candidate) => candidate === overId);
     if (!status) return;
     move(itemId, status, currentStatus);
   };
@@ -176,17 +204,16 @@ function SprintBoardPage() {
   const { sprint, items } = boardQuery.data!;
   const members = (membersQuery.data ?? []) as Member[];
   const boardItems = (items as BoardItem[]).map((item) => {
-    const status = (pending[item.id] ?? item.status) as BoardStatus;
-    // Sprint work always belongs to a board column; anything else shows in To Do
-    // so a card can never end up invisible.
-    const columnStatus: SprintBoardStatus = SPRINT_BOARD_STATUSES.includes(
-      status as SprintBoardStatus,
-    )
+    const status = (overrides[item.id] ?? item.status) as BoardStatus;
+    // Sprint work always belongs to a board column; anything else shows in the
+    // first column so a card can never end up invisible.
+    const columnStatus: SprintBoardStatus = COLUMNS.includes(status as SprintBoardStatus)
       ? (status as SprintBoardStatus)
-      : "TODO";
+      : COLUMNS[0]!;
     return { ...item, status: columnStatus };
   });
   const committed = boardItems.reduce((sum, item) => sum + (item.story_points ?? 0), 0);
+  const draggingItem = boardItems.find((item) => item.id === draggingId) ?? null;
 
   return (
     <AppShell
@@ -212,19 +239,35 @@ function SprintBoardPage() {
             No work in this sprint yet. Assign approved backlog items to it from the backlog.
           </p>
         ) : (
-          <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-            <div className="grid gap-3 lg:grid-cols-4">
-              {SPRINT_BOARD_STATUSES.map((status) => (
-                <Column
-                  key={status}
-                  status={status}
-                  items={boardItems.filter((item) => item.status === status)}
-                  projectId={projectId}
-                  members={members}
-                  onMove={move}
-                />
-              ))}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={collisionDetection}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDragCancel={() => setDraggingId(null)}
+          >
+            {/* One continuous horizontal workspace: fixed-width columns, board scrolls. */}
+            <div className="-mx-1 overflow-x-auto px-1 pb-2">
+              <div className="flex min-w-max items-start gap-4">
+                {COLUMNS.map((status) => (
+                  <Column
+                    key={status}
+                    status={status}
+                    items={boardItems.filter((item) => item.status === status)}
+                    projectId={projectId}
+                    members={members}
+                    draggingId={draggingId}
+                    onMove={move}
+                  />
+                ))}
+              </div>
             </div>
+
+            <DragOverlay dropAnimation={null}>
+              {draggingItem ? (
+                <CardBody item={draggingItem} projectId={projectId} members={members} overlay />
+              ) : null}
+            </DragOverlay>
           </DndContext>
         )}
         <p className="text-xs text-muted-foreground">
@@ -240,29 +283,36 @@ function Column({
   items,
   projectId,
   members,
+  draggingId,
   onMove,
 }: {
   status: SprintBoardStatus;
   items: BoardItem[];
   projectId: string;
   members: Member[];
+  draggingId: string | null;
   onMove: (itemId: string, status: BoardStatus, currentStatus: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const tone = BOARD_STATUS_COLORS[status];
 
   return (
     <section
-      ref={setNodeRef}
       className={cn(
-        "surface-card overflow-hidden p-3 pt-0 transition-colors",
-        isOver ? BOARD_STATUS_COLORS[status].drop : "",
+        "flex w-[288px] shrink-0 flex-col rounded-xl border border-border bg-muted/40 transition-colors",
+        isOver ? tone.drop : "",
       )}
     >
-      <div className={cn("-mx-3 mb-2 h-1", BOARD_STATUS_COLORS[status].dot)} aria-hidden />
-      <StatusHeader status={status} count={items.length} className="px-1 pb-2" />
-      <ul className="min-h-16 space-y-2">
+      <div className={cn("h-1 rounded-t-xl", tone.dot)} aria-hidden />
+      <StatusHeader status={status} count={items.length} className="px-3 py-2.5" />
+      <ul ref={setNodeRef} className="flex min-h-32 flex-col gap-2 px-3 pb-3">
         {items.length === 0 ? (
-          <li className="rounded-lg border border-dashed border-border px-2 py-6 text-center text-xs text-muted-foreground">
+          <li
+            className={cn(
+              "rounded-lg border border-dashed border-border px-2 py-8 text-center text-xs text-muted-foreground",
+              isOver ? "border-solid" : "",
+            )}
+          >
             Drop work here
           </li>
         ) : (
@@ -272,6 +322,7 @@ function Column({
               item={item}
               projectId={projectId}
               members={members}
+              isDragging={draggingId === item.id}
               onMove={onMove}
             />
           ))
@@ -285,66 +336,94 @@ function Card({
   item,
   projectId,
   members,
+  isDragging,
   onMove,
 }: {
   item: BoardItem;
   projectId: string;
   members: Member[];
+  isDragging: boolean;
   onMove: (itemId: string, status: BoardStatus, currentStatus: string) => void;
 }) {
-  const owner = members.find((member) => member.user_id === item.assignee_id);
-  const ownerName = owner ? (owner.display_name ?? owner.email ?? "Member") : null;
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef } = useDraggable({
     id: item.id,
     data: { status: item.status },
   });
 
   return (
-    <li
-      ref={setNodeRef}
-      style={transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined}
+    <li ref={setNodeRef} className={isDragging ? "opacity-40" : undefined}>
+      <CardBody
+        item={item}
+        projectId={projectId}
+        members={members}
+        onMove={onMove}
+        handleProps={{ ...attributes, ...listeners }}
+      />
+    </li>
+  );
+}
+
+function CardBody({
+  item,
+  projectId,
+  members,
+  onMove,
+  handleProps,
+  overlay,
+}: {
+  item: BoardItem;
+  projectId: string;
+  members: Member[];
+  onMove?: (itemId: string, status: BoardStatus, currentStatus: string) => void;
+  handleProps?: Record<string, unknown>;
+  overlay?: boolean;
+}) {
+  const owner = members.find((member) => member.user_id === item.assignee_id);
+  const ownerName = owner ? (owner.display_name ?? owner.email ?? "Member") : null;
+
+  return (
+    <div
       className={cn(
-        "rounded-lg border border-border bg-surface p-3",
-        isDragging ? "opacity-70 shadow-lg" : "",
+        "rounded-lg border border-l-4 border-border bg-surface px-2.5 py-2",
+        BOARD_STATUS_COLORS[item.status as BoardStatus]?.edge,
+        overlay ? "w-[264px] rotate-1 shadow-xl" : "shadow-sm",
       )}
     >
-      <div className="flex items-start gap-2">
-        <button
-          type="button"
+      <div className="flex items-start gap-1.5">
+        <span
           className="mt-0.5 cursor-grab rounded p-0.5 text-muted-foreground hover:text-foreground"
           aria-label={`Drag ${item.title}`}
-          {...attributes}
-          {...listeners}
+          {...(handleProps ?? {})}
         >
           <GripVertical className="size-4" aria-hidden />
-        </button>
+        </span>
         <div className="min-w-0 flex-1">
-          {item.feature_id ? (
+          {item.feature_id && !overlay ? (
             <Link
               to="/projects/$projectId/ideas/$featureId"
               params={{ projectId, featureId: item.feature_id }}
-              className="text-sm font-medium hover:text-primary"
+              className="line-clamp-2 text-sm font-medium leading-snug hover:text-primary"
             >
               {item.title}
             </Link>
           ) : (
-            <p className="text-sm font-medium">{item.title}</p>
+            <p className="line-clamp-2 text-sm font-medium leading-snug">{item.title}</p>
           )}
-          <p className="mt-0.5 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
             {item.feature_id ? "Feature" : "Work item"}
           </p>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <PriorityBadge priority={item.priority as Priority} />
             <PointsBadge points={item.story_points} />
           </div>
-          <div className="mt-2 flex items-center gap-1.5">
+          <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
             <UserAvatar
               name={ownerName}
               imageUrl={owner?.avatar_url}
-              className="size-6"
-              fallbackClassName="text-[9px]"
+              className="size-5 shrink-0"
+              fallbackClassName="text-[8px]"
             />
-            <span className="min-w-0 truncate text-xs text-muted-foreground">
+            <span className="min-w-0 truncate text-[11px] text-muted-foreground">
               {ownerName ?? "Unassigned"}
               {owner?.professionalRoles?.length
                 ? ` · ${owner.professionalRoles.map((role) => iconTextLabel(role)).join(", ")}`
@@ -352,41 +431,43 @@ function Card({
             </span>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 shrink-0"
-              aria-label={`Actions for ${item.title}`}
-            >
-              <MoreHorizontal className="size-4" aria-hidden />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Move to</DropdownMenuLabel>
-            {SPRINT_BOARD_STATUSES.filter((next) => next !== item.status).map((next) => (
-              <DropdownMenuItem key={next} onClick={() => onMove(item.id, next, item.status)}>
-                <StatusDot status={next} />
-                {BOARD_STATUS_LABELS[next]}
-              </DropdownMenuItem>
-            ))}
-            {item.feature_id ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link
-                    to="/projects/$projectId/ideas/$featureId"
-                    params={{ projectId, featureId: item.feature_id }}
-                  >
-                    Open idea
-                  </Link>
+        {overlay || !onMove ? null : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6 shrink-0"
+                aria-label={`Actions for ${item.title}`}
+              >
+                <MoreHorizontal className="size-4" aria-hidden />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Move to</DropdownMenuLabel>
+              {COLUMNS.filter((next) => next !== item.status).map((next) => (
+                <DropdownMenuItem key={next} onClick={() => onMove(item.id, next, item.status)}>
+                  <StatusDot status={next} />
+                  {BOARD_STATUS_LABELS[next]}
                 </DropdownMenuItem>
-              </>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              ))}
+              {item.feature_id ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/projects/$projectId/ideas/$featureId"
+                      params={{ projectId, featureId: item.feature_id }}
+                    >
+                      Open idea
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
-    </li>
+    </div>
   );
 }
