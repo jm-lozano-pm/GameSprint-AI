@@ -15,7 +15,7 @@ An AI-powered product-planning MVP designed to help indie and small game-develop
 
 This project was developed as part of the **Ironhack AI Product Manager Bootcamp**.
 
-> 📄 **Quick Links:** [PRD](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf) • [Slide Presentation](https://www.figma.com/proto/nRxc0bhcarxf49JPgvDKFb/GameSprint-AI-%E2%80%94-Design-System-1.0?node-id=7870-10&p=f&t=iNSoHcMx1epxp1dj-1&scaling=contain&content-scaling=fixed&page-id=7870%3A5) • [Live MVP](https://lovable.dev/preview/kmLD5kvuTbXOlfhIx3HY7jpvAlIAjegE)
+> 📄 **Quick Links:** [PRD](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf) • [Slide Presentation](https://docs.google.com/presentation/d/1CnhHZjrPHzoTupSoiqQagGp1KqgAyNdi/edit?usp=sharing&ouid=112156500298191034890&rtpof=true&sd=true) • [Live MVP](https://sprintwiz-game.lovable.app/)
 
 ---
 
@@ -308,7 +308,7 @@ The presentation includes:
 
 ### 🔗 Presentation
 
-[Open the GameSprint AI Slide Presentation](https://www.figma.com/proto/nRxc0bhcarxf49JPgvDKFb/GameSprint-AI-%E2%80%94-Design-System-1.0?node-id=7870-10&p=f&t=iNSoHcMx1epxp1dj-1&scaling=contain&content-scaling=fixed&page-id=7870%3A5)
+[Open the GameSprint AI Slide Presentation](https://docs.google.com/presentation/d/1CnhHZjrPHzoTupSoiqQagGp1KqgAyNdi/edit?usp=sharing&ouid=112156500298191034890&rtpof=true&sd=true)
 
 ---
 
@@ -402,7 +402,7 @@ The repository contains the main artefacts produced during the project:
 
 ### 🚀 Live MVP
 
-[Open GameSprint AI](https://lovable.dev/preview/kmLD5kvuTbXOlfhIx3HY7jpvAlIAjegE)
+[Open GameSprint AI](https://sprintwiz-game.lovable.app/)
 
 ---
 
