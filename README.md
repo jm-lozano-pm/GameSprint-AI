@@ -448,7 +448,7 @@ The results of that validation would determine whether to expand into deeper col
 
 This project was developed collaboratively by:
 
-- **Jose Manuel Lozano** – [LinkedIn](https://www.linkedin.com/in/jose-manuel-lozano-barba/?locale=en-US) · [GitHub](https://github.com/joselozano-pm)
+- **Jose Manuel Lozano** – [LinkedIn](https://www.linkedin.com/in/jm-lozano/) · [GitHub](https://github.com/jm-lozano-pm)
 - **Oluwagbemiga Adeniyi (Sola)** – [LinkedIn](https://www.linkedin.com/in/oluwagbemiga-adeniyi-06657b86/) · [GitHub](https://github.com/DDarsh100)
 
 
