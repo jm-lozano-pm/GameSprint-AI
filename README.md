@@ -15,7 +15,7 @@ An AI-powered product-planning MVP designed to help indie and small game-develop
 
 This project was developed as part of the **Ironhack AI Product Manager Bootcamp**.
 
-> 📄 **Quick Links:** [PRD](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf) • [Slide Presentation](https://docs.google.com/presentation/d/1CnhHZjrPHzoTupSoiqQagGp1KqgAyNdi/edit?usp=sharing&ouid=112156500298191034890&rtpof=true&sd=true) • [Live MVP](https://sprintwiz-game.lovable.app/)
+> 📄 **Quick Links:** [PRD](docs/GameSprint%20AI%20%E2%80%94%20Product%20Requirements%20Document%20(PRD).pdf) • [Slide Presentation](https://docs.google.com/presentation/d/1CnhHZjrPHzoTupSoiqQagGp1KqgAyNdi/edit?usp=sharing&ouid=112156500298191034890&rtpof=true&sd=true) • [Live MVP](https://sprintwiz-game.lovable.app/) • [MVP walkthrough (video)](#-mvp-walkthrough)
 
 ---
 
@@ -221,6 +221,13 @@ The objective is not simply faster AI generation — it is reducing the total ti
 ---
 
 ## 🎨 Product Experience
+
+### 🎬 MVP walkthrough
+
+[![GameSprint AI MVP walkthrough (click to watch)](assets/gamesprint-walkthrough-poster.jpg)](assets/gamesprint-walkthrough.mp4)
+
+*Recorded in the live MVP: a new idea goes through AI breakdown, a scope warning, human review and approval, then into the backlog and a sprint. About 70 seconds, no sound. [Watch the video](assets/gamesprint-walkthrough.mp4).*
+
 
 The product experience was designed around a lightweight workflow rather than a traditional enterprise project-management interface.
 
